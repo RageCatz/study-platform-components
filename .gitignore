@@ -1,0 +1,9 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Node modules (for future backend)
+node_modules/
+
+# Environment variables (important later)
+.env

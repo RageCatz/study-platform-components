@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats Toggle</title>
+    <style>
+        /* --- 1. Core Variables --- */
+        :root {
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --line: #dce4f4;
+            --text: #1f2a44;
+            --muted: #6c7898;
+            --primary: #6f80ff;
+            --shadow: 0 10px 28px rgba(41,63,115,.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Trebuchet MS", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- 2. Layout --- */
+        .card {
+            background: var(--panel);
+            border-radius: 22px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+        }
+
+        /* --- 3. Toggle Row Styles --- */
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .label-text {
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .label-desc {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .switch {
+            width: 56px;
+            height: 32px;
+            border-radius: 999px;
+            background: #d9e2fb;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .switch::after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        /* Active State */
+        .switch.on {
+            background: var(--primary);
+        }
+
+        .switch.on::after {
+            transform: translateX(24px);
+        }
+
+        /* --- 4. Stats Section (Hidden by default using data attribute) --- */
+        .stats-section {
+            margin-top: 30px;
+            display: grid; /* Visible by default */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        /* The Magic: Hide stats if body has hide-home-stats class */
+        body.hide-home-stats [data-home-stats] {
+            display: none !important;
+        }
+
+        .kpi {
+            background: #f3f6ff;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--line);
+        }
+
+        .kpi strong {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .kpi span {
+            font-size: 11px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Quick Settings</h2>
+
+        <!-- Toggle -->
+        <div class="setting-row">
+            <div>
+                <div class="label-text">Show stats on home</div>
+                <div class="label-desc">Display progress cards on dashboard</div>
+            </div>
+            <div class="switch" id="statsToggle" onclick="toggleStats()"></div>
+        </div>
+
+        <!-- Stats Display (Controlled by Toggle) -->
+        <div class="stats-section" data-home-stats>
+            <div class="kpi">
+                <strong>45 min</strong>
+                <span>Focus Today</span>
+            </div>
+            <div class="kpi">
+                <strong>3/5</strong>
+                <span>Tasks Done</span>
+            </div>
+            <div class="kpi">
+                <strong>75%</strong>
+                <span>Daily Goal</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        // --- 1. Mock Data Helpers ---
+        function getData() {
+            // Simulating a user data object
+            const raw = localStorage.getItem('ff_demo_data');
+            return raw ? JSON.parse(raw) : {
+                settings: { showStatsOnHome: true } // Default: ON
+            };
+        }
+
+        function saveData(data) {
+            localStorage.setItem('ff_demo_data', JSON.stringify(data));
+        }
+
+        // --- 2. Core Logic ---
+
+        function init() {
+            const data = getData();
+
+            // 1. Update Toggle Visual Position
+            const toggleEl = document.getElementById('statsToggle');
+
+            // 2. Apply "on" class if setting is true
+            if (data.settings.showStatsOnHome) {
+                toggleEl.classList.add('on');
+            } else {
+                toggleEl.classList.remove('on');
+            }
+
+            // 3. Hide/Show Stats based on setting
+            if (data.settings.showStatsOnHome === false) {
+                document.body.classList.add('hide-home-stats');
+            } else {
+                document.body.classList.remove('hide-home-stats');
+            }
+        }
+
+        function toggleStats() {
+            const data = getData();
+
+            // Flip the boolean
+            data.settings.showStatsOnHome = !data.settings.showStatsOnHome;
+
+            // Save new state
+            saveData(data);
+
+            // Re-run init to update UI
+            init();
+        }
+
+        // Run on load
+        init();
+    </script>
+</body>
+</html>

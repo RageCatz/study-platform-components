@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Streak</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --line: #dce4f4;
+            --text: #1f2a44;
+            --muted: #6c7898;
+            --primary: #6f80ff;
+            --primary-soft: #eef1ff;
+            --amber: #f2b255;
+            --shadow: 0 10px 28px rgba(41,63,115,.08);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Trebuchet MS", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background: var(--panel);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            border: 1px solid var(--line);
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .pill {
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .fire-icon {
+            font-size: 32px;
+            margin: 30px 0 10px 0;
+        }
+
+        .count-display {
+            font-size: 78px;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .count-label {
+            font-size: 16px;
+            color: var(--muted);
+            font-weight: 700;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer {
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .footer strong {
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Study Streak</h2>
+        <div class="pill">
+            <span>🔥 Active</span>
+        </div>
+
+        <div class="fire-icon">🔥</div>
+
+        <div class="count-display" id="streakCount">0</div>
+        <div class="count-label">Days</div>
+
+        <div class="footer">
+            <span id="statusMsg">Loading...</span>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Configuration ---
+        const STORAGE_KEY = 'focusflow_streak_data';
+
+        // --- 2. Helpers ---
+
+        // Get current date in YYYY-MM-DD format
+        function todayISO() {
+            const d = new Date();
+            return d.toISOString().slice(0, 10);
+        }
+
+        // Calculate difference in days between two YYYY-MM-DD strings
+        function dayDiff(dateOld, dateNew) {
+            if(!dateOld || !dateNew) return 0;
+            const a = new Date(dateOld + 'T00:00:00');
+            const b = new Date(dateNew + 'T00:00:00');
+            return Math.round((b - a) / 86400000);
+        }
+
+        // --- 3. Logic ---
+
+        function loadStreak() {
+            // 1. Get existing data (or create default if empty)
+            const raw = localStorage.getItem(STORAGE_KEY);
+            let data = raw ? JSON.parse(raw) : { count: 0, lastDate: null };
+
+            const today = todayISO();
+            const last = data.lastDate;
+
+            // 2. Check Logic: "Every 24 hours, if user goes on browser, streak +1"
+
+            // We only update if we haven't already checked in today
+            if (last !== today) {
+
+                if (last) {
+                    const diff = dayDiff(last, today);
+
+                    if (diff === 1) {
+                        // It was yesterday: Increment
+                        data.count++;
+                    } else {
+                        // It was older than 1 day OR first time: Reset to 1
+                        // (Restarting the streak because they missed yesterday)
+                        data.count = 1;
+                    }
+                } else {
+                    // First ever visit
+                    data.count = 1;
+                }
+
+                // Update timestamp
+                data.lastDate = today;
+
+                // Save back to local storage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+
+            return data;
+        }
+
+        function render() {
+            const data = loadStreak();
+            const countEl = document.getElementById('streakCount');
+            const msgEl = document.getElementById('statusMsg');
+
+            // Animate the number
+            countEl.innerText = data.count;
+
+            // Update footer message based on when they last visited
+            if (data.count > 0) {
+                msgEl.innerHTML = "Great job! Keep it up tomorrow.";
+            } else {
+                msgEl.innerHTML = "Start your streak today!";
+            }
+        }
+
+        // Run on load
+        render();
+    </script>
+</body>
+</html>

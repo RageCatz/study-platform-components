@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Bar</title>
+    <style>
+        /* --- 1. Core Variables --- */
+        :root {
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --line: #dce4f4;
+            --text: #1f2a44;
+            --muted: #6c7898;
+            --primary: #6f80ff;
+            --shadow: 0 10px 28px rgba(41,63,115,.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Trebuchet MS", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- 2. Card Layout --- */
+        .card {
+            background: var(--panel);
+            border-radius: 22px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+        }
+
+        h3 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .muted {
+            color: var(--muted);
+            margin: 0 0 16px;
+        }
+
+        /* --- 3. Progress Bar --- */
+        .bar-container {
+            height: 14px;
+            border-radius: 999px;
+            background: #edf1fb;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .bar-fill {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #83c2ff, #6f80ff);
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        .percent-text {
+            margin-top: 10px;
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        /* --- 4. Task List --- */
+        .task-list {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: #f3f6ff;
+            border: 1px solid var(--line);
+        }
+
+        .task-item.completed {
+            background: #e9f8f0;
+            border-color: #cfeedd;
+        }
+
+        .task-name {
+            font-weight: 800;
+            flex: 1;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: 2px solid #b7c6ea;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            background: var(--panel);
+        }
+
+        .checkbox.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        /* --- 5. Buttons --- */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .add-btn {
+            flex: 1;
+            background: #f3f6ff;
+            color: var(--primary);
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .add-btn:hover {
+            background: #eef1ff;
+        }
+
+        .reset-btn {
+            flex: 1;
+            background: #fdf2f2;
+            color: #c14e4e;
+            border: 1px solid #f2c8c8;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background: #ffe9e9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h3>Overall Progress</h3>
+        <p class="muted">Based on your current task list</p>
+
+        <!-- Progress Bar -->
+        <div class="bar-container">
+            <span class="bar-fill" id="progressBar" style="width: 0%"></span>
+        </div>
+        <div class="percent-text" id="percentText">0% complete</div>
+
+        <!-- Task List -->
+        <div class="task-list" id="taskList">
+            <!-- Tasks will be rendered here -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="btn-row">
+            <div class="add-btn" id="addTaskBtn">+ Add Task</div>
+            <div class="reset-btn" id="resetBtn">Reset</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Default Data ---
+        const defaultTasks = [
+            { id: 1, name: 'Math Homework', status: 'todo' },
+            { id: 2, name: 'Science Revision', status: 'todo' },
+            { id: 3, name: 'English Essay', status: 'todo' },
+            { id: 4, name: 'History Notes', status: 'done' }
+        ];
+
+        // --- 2. Data Helpers ---
+        function loadData() {
+            const raw = localStorage.getItem('ff_demo_progress');
+            return raw ? JSON.parse(raw) : defaultTasks;
+        }
+
+        function saveData(tasks) {
+            localStorage.setItem('ff_demo_progress', JSON.stringify(tasks));
+        }
+
+        function progressPct(tasks) {
+            const total = Math.max(tasks.length, 1);
+            const done = tasks.filter(t => t.status === 'done').length;
+            return Math.round(done / total * 100);
+        }
+
+        // --- 3. Render Functions ---
+        function renderProgress() {
+            const tasks = loadData();
+            const pct = progressPct(tasks);
+
+            // Update progress bar
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('percentText').textContent = pct + '% complete';
+        }
+
+        function renderTasks() {
+            const tasks = loadData();
+            const list = document.getElementById('taskList');
+
+            list.innerHTML = tasks.map((task, index) => `
+                <div class="task-item ${task.status === 'done' ? 'completed' : ''}">
+                    <div class="task-name">${task.name}</div>
+                    <div class="checkbox ${task.status === 'done' ? 'checked' : ''}" 
+                         onclick="toggleTask(${index})">
+                        ${task.status === 'done' ? '✓' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function render() {
+            renderProgress();
+            renderTasks();
+        }
+
+        // --- 4. Actions ---
+        function toggleTask(index) {
+            const tasks = loadData();
+            if (tasks[index]) {
+                tasks[index].status = tasks[index].status === 'done' ? 'todo' : 'done';
+                saveData(tasks);
+                render();
+            }
+        }
+
+        function addTask() {
+            // Ask for task name
+            const taskName = prompt('Enter task name:');
+            if (!taskName || taskName.trim() === '') return;
+
+            const tasks = loadData();
+            const newTask = {
+                id: Date.now(),
+                name: taskName.trim(),
+                status: 'todo'
+            };
+            tasks.push(newTask);
+            saveData(tasks);
+            render();
+        }
+
+        function resetTasks() {
+            if (confirm('Reset all tasks to default?')) {
+                saveData(defaultTasks);
+                render();
+            }
+        }
+
+        // Initialize
+        document.getElementById('addTaskBtn').addEventListener('click', addTask);
+        document.getElementById('resetBtn').addEventListener('click', resetTasks);
+        render();
+    </script>
+</body>
+</html>

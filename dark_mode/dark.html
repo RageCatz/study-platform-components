@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Dark Mode</title>
+    <style>
+        /* --- 1. Core Variables & Layout --- */
+        :root {
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --line: #dce4f4;
+            --text: #1f2a44;
+            --muted: #6c7898;
+            --primary: #6f80ff;
+            --shadow: 0 10px 28px rgba(41,63,115,.08);
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg: #111827;
+            --panel: #182131;
+            --line: #2a3550;
+            --text: #f3f6ff;
+            --muted: #aeb9d6;
+        }
+
+        /* Reset & Base */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Trebuchet MS", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* --- 2. Card Design --- */
+        .card {
+            background: var(--panel);
+            border-radius: 30px;
+            padding: 40px;
+            width: 100%;
+            max-width: 340px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--line);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        h2 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--line);
+            transition: border-color 0.3s;
+        }
+
+        .setting-label {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .setting-desc {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* --- 3. Toggle Switch Design --- */
+        .switch {
+            width: 56px;
+            height: 32px;
+            border-radius: 999px;
+            background: #d9e2fb;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        /* The little circle inside the switch */
+        .switch::after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        /* Active State (Dark Mode ON) */
+        .switch.on {
+            background: #7b89ff; /* Purple */
+        }
+
+        .switch.on::after {
+            transform: translateX(24px); /* Move to right */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Settings Card -->
+    <div class="card">
+        <h2>Appearance</h2>
+
+        <!-- Dark Mode Toggle -->
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Dark mode</div>
+                <div class="setting-desc">Switch to a darker theme</div>
+            </div>
+            <!-- The actual switch element -->
+            <div class="switch" id="darkModeToggle" onclick="toggleDarkMode()"></div>
+        </div>
+    </div>
+    <script>
+        // --- Logic ---
+
+        // 1. Check for saved preference on load
+        function checkTheme() {
+            // Try to get preference
+            const savedTheme = localStorage.getItem('focusflow_dark_mode');
+            const wantsDark = savedTheme === 'true';
+
+            if(wantsDark) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').classList.add('on');
+            }
+        }
+
+        // 2. Handle Toggle Click
+        function toggleDarkMode() {
+            const switchEl = document.getElementById('darkModeToggle');
+            const body = document.body;
+            const isDark = body.classList.contains('dark-mode');
+
+            if(isDark) {
+                // Turn Off
+                body.classList.remove('dark-mode');
+                switchEl.classList.remove('on');
+                localStorage.setItem('focusflow_dark_mode', 'false');
+            } else {
+                // Turn On
+                body.classList.add('dark-mode');
+                switchEl.classList.add('on');
+                localStorage.setItem('focusflow_dark_mode', 'true');
+            }
+        }
+
+        // Initialize
+        checkTheme();
+    </script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Alert</title>
+    <style>
+        /* --- 1. Core Variables --- */
+        :root {
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --line: #dce4f4;
+            --text: #1f2a44;
+            --muted: #6c7898;
+            --primary: #6f80ff;
+            --shadow: 0 10px 28px rgba(41,63,115,.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Trebuchet MS", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- 2. Card Layout --- */
+        .card {
+            background: var(--panel);
+            border-radius: 22px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        h3 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .muted {
+            color: var(--muted);
+            margin: 0 0 20px;
+        }
+
+        /* --- 3. Timer Display --- */
+        .timer-display {
+            font-size: 64px;
+            font-weight: 900;
+            margin: 20px 0;
+        }
+
+        /* --- 4. Toggle --- */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #edf1fb;
+            margin-bottom: 20px;
+        }
+
+        .toggle-label {
+            font-weight: 800;
+        }
+
+        .toggle-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .switch {
+            width: 56px;
+            height: 32px;
+            border-radius: 999px;
+            background: #d9e2fb;
+            position: relative;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .switch::after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--panel);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: 0.2s;
+        }
+
+        .switch.on {
+            background: #7b89ff;
+        }
+
+        .switch.on::after {
+            left: 28px;
+        }
+
+        /* --- 5. Buttons --- */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #7a88ff, #6d79f4);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 10px 18px rgba(111,128,255,.24);
+            transition: transform 0.1s;
+        }
+
+        .primary-btn:active {
+            transform: scale(0.96);
+        }
+
+        .secondary-btn {
+            background: #f3f6ff;
+            color: #30406b;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .secondary-btn:hover {
+            background: #eef1ff;
+        }
+
+        /* --- 6. Stop Alarm Button (Red) --- */
+        .stop-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 10px 18px rgba(255,107,107,.24);
+            transition: transform 0.1s;
+            display: none; /* Hidden by default */
+        }
+
+        .stop-btn.visible {
+            display: inline-block;
+            animation: popIn 0.3s ease;
+        }
+
+        .stop-btn:active {
+            transform: scale(0.96);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- 7. Status --- */
+        .status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 14px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status.running {
+            background: #e9f8f0;
+            color: #2f8e5d;
+        }
+
+        .status.paused {
+            background: #fff3df;
+            color: #c78a2f;
+        }
+
+        .status.done {
+            background: #ffeef0;
+            color: #d63636;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>Sound Alert Timer</h3>
+        <p class="muted">1 minute timer with phone alarm</p>
+
+        <!-- Sound Alert Toggle -->
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">Sound alerts</div>
+                <div class="toggle-sub">Classic phone alarm sound</div>
+            </div>
+            <div class="switch on" id="soundToggle" onclick="toggleSound()"></div>
+        </div>
+
+        <!-- Timer Display -->
+        <div class="timer-display" id="timerDisplay">01:00</div>
+
+        <!-- Buttons -->
+        <div class="btn-row">
+            <button class="primary-btn" id="startBtn" onclick="startTimer()">Start</button>
+            <button class="secondary-btn" id="pauseBtn" onclick="pauseTimer()">Pause</button>
+            <button class="secondary-btn" id="resetBtn" onclick="resetTimer()">Reset</button>
+        </div>
+
+        <!-- Stop Alarm Button -->
+        <div class="btn-row">
+            <button class="stop-btn" id="stopAlarmBtn" onclick="stopAlarmLoop()">⏹ Stop Sound Alert</button>
+        </div>
+
+        <!-- Test Button -->
+        <div style="margin-top: 10px;">
+            <button class="secondary-btn" style="font-size: 12px; padding: 8px 12px;" onclick="testSound()">Test Sound</button>
+        </div>
+
+        <!-- Status -->
+        <div class="status" id="status">Ready to start</div>
+    </div>
+
+    <script>
+        // --- 1. State Variables ---
+        let timer = null;
+        let remaining = 60;
+        let soundEnabled = true;
+        let audioContext = null;
+        
+        let alarmInterval = null;
+        let alarmTimeout = null;
+        let isAlarmRinging = false;
+
+        // --- 2. Initialize Audio ---
+        function initAudio() {
+            try {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) {
+                    audioContext = new AC();
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                }
+            } catch (err) {
+                console.error("Audio init failed", err);
+            }
+        }
+
+        // --- 3. Classic Phone Alarm Sound ---
+        function playAlarm() {
+            if (!soundEnabled || !audioContext) return;
+
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            const now = audioContext.currentTime;
+            
+            // Classic alarm: "beep-beep" pattern with two tones
+            // Pattern: High tone - pause - Low tone - pause (repeated twice)
+            
+            const frequencies = [1000, 800]; // Two different tones
+            
+            frequencies.forEach((freq, index) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.type = 'square'; // Square wave for that digital alarm feel
+                osc.frequency.value = freq;
+                
+                // Timing for this specific beep
+                const startTime = now + (index * 0.25);
+                const endTime = startTime + 0.15;
+                
+                // Volume envelope (attack and release)
+                gain.gain.setValueAtTime(0.001, startTime);
+                gain.gain.linearRampToValueAtTime(0.5, startTime + 0.01); // Attack
+                gain.gain.setValueAtTime(0.5, endTime - 0.01);
+                gain.gain.linearRampToValueAtTime(0.001, endTime); // Release
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.start(startTime);
+                osc.stop(endTime);
+            });
+        }
+
+        // --- 4. Start Looping Alarm ---
+        function startAlarmLoop() {
+            if (!soundEnabled) return;
+            
+            isAlarmRinging = true;
+            
+            document.getElementById('stopAlarmBtn').classList.add('visible');
+            
+            // Play first alarm cycle
+            playAlarm();
+            
+            // Repeat the alarm every 1 second (creates the classic alarm rhythm)
+            alarmInterval = setInterval(() => {
+                playAlarm();
+            }, 1000);
+
+            // Auto-stop after 60 seconds (1 minute)
+            alarmTimeout = setTimeout(() => {
+                stopAlarmLoop(true);
+            }, 60000);
+        }
+
+        // --- 5. Stop Looping Alarm ---
+        function stopAlarmLoop(timedOut = false) {
+            clearInterval(alarmInterval);
+            clearTimeout(alarmTimeout);
+            alarmInterval = null;
+            alarmTimeout = null;
+            isAlarmRinging = false;
+
+            document.getElementById('stopAlarmBtn').classList.remove('visible');
+
+            if (timedOut) {
+                document.getElementById('status').textContent = 'Timed Out - Stopped';
+                document.getElementById('status').className = 'status paused';
+            }
+        }
+
+        // --- 6. Toggle Sound ---
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const el = document.getElementById('soundToggle');
+            el.classList.toggle('on', soundEnabled);
+
+            if (soundEnabled) testSound();
+        }
+
+        // --- 7. Timer Functions ---
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
+
+        function updateDisplay() {
+            document.getElementById('timerDisplay').textContent = formatTime(remaining);
+        }
+
+        function tick() {
+            if (remaining > 0) {
+                remaining--;
+                updateDisplay();
+            } else {
+                finishTimer();
+            }
+        }
+
+        function startTimer() {
+            stopAlarmLoop();
+            if (!audioContext) initAudio();
+
+            if (timer) return;
+            if (remaining <= 0) remaining = 60;
+
+            timer = setInterval(tick, 1000);
+            document.getElementById('status').textContent = 'Running...';
+            document.getElementById('status').className = 'status running';
+        }
+
+        function pauseTimer() {
+            stopAlarmLoop();
+            clearInterval(timer);
+            timer = null;
+            document.getElementById('status').textContent = 'Paused';
+            document.getElementById('status').className = 'status paused';
+        }
+
+        function resetTimer() {
+            stopAlarmLoop();
+            pauseTimer();
+            remaining = 60;
+            updateDisplay();
+            document.getElementById('status').textContent = 'Ready to start';
+            document.getElementById('status').className = 'status';
+        }
+
+        function finishTimer() {
+            pauseTimer();
+            startAlarmLoop();
+            document.getElementById('status').textContent = 'Time is up!';
+            document.getElementById('status').className = 'status done';
+        }
+
+        // --- 8. Test Sound ---
+        function testSound() {
+            stopAlarmLoop();
+            if (!audioContext) initAudio();
+            
+            playAlarm();
+            
+            const statusEl = document.getElementById('status');
+            const prevText = statusEl.textContent;
+            statusEl.textContent = 'Test Alarm 🔔';
+            statusEl.className = 'status running';
+            
+            setTimeout(() => {
+                if (!timer && !isAlarmRinging) {
+                    statusEl.textContent = prevText;
+                    statusEl.className = 'status';
+                }
+            }, 1000);
+        }
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #fff;
+      --text: #1f2a44;
+      --muted: #64708d;
+      --line: #dce4f4;
+      --primary: #4f63d7;
+      --success: #2f8e5d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    main {
+      width: min(900px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin-top: 0;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(41, 63, 115, .08);
+      margin-bottom: 16px;
+    }
+
+    .tasks {
+      display: grid;
+      gap: 10px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .task {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      background: var(--primary);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Welcome</h1>
+        <p id="welcome">Loading your SQL-backed account...</p>
+      </div>
+      <button id="logout" type="button">Log Out</button>
+    </header>
+
+    <section class="panel">
+      <h2>Your Tasks</h2>
+      <ul class="tasks" id="tasks"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>Progress</h2>
+      <p id="progress"></p>
+    </section>
+  </main>
+
+  <script>
+    const welcome = document.getElementById('welcome');
+    const tasksList = document.getElementById('tasks');
+    const progress = document.getElementById('progress');
+
+    async function requireSession() {
+      const response = await fetch('/api/session', { credentials: 'same-origin' });
+
+      if (!response.ok) {
+        location.href = 'login.html';
+        return null;
+      }
+
+      const result = await response.json();
+      return result.user;
+    }
+
+    async function loadUserData() {
+      const response = await fetch('/api/user-data', { credentials: 'same-origin' });
+
+      if (!response.ok) {
+        tasksList.innerHTML = '<li class="task">No saved data found.</li>';
+        return;
+      }
+
+      const result = await response.json();
+      const data = result.data;
+
+      tasksList.innerHTML = data.tasks.map((task) => `
+        <li class="task">
+          <span>${task.name}</span>
+          <span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span>
+        </li>
+      `).join('');
+
+      progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
+    }
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'same-origin'
+      });
+      location.href = 'login.html';
+    });
+
+    (async () => {
+      try {
+        const user = await requireSession();
+        if (!user) return;
+        welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
+        await loadUserData();
+      } catch {
+        location.href = 'login.html';
+      }
+    })();
+  </script>
+</body>
+</html>
