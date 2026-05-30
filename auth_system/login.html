@@ -18,9 +18,7 @@
       --success: #2f8e5d;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -49,20 +47,11 @@
       padding: 32px;
     }
 
-    .form {
-      padding: 32px;
-    }
+    .form { padding: 32px; }
 
-    h1,
-    h2 {
-      margin: 0 0 12px;
-    }
+    h1, h2 { margin: 0 0 12px; }
 
-    p,
-    .hint {
-      color: var(--muted);
-      line-height: 1.5;
-    }
+    p, .hint { color: var(--muted); line-height: 1.5; }
 
     form {
       display: grid;
@@ -89,9 +78,7 @@
       border-color: var(--primary);
     }
 
-    .field.invalid input {
-      border-color: #ff9f43;
-    }
+    .field.invalid input { border-color: #ff9f43; }
 
     .error {
       display: none;
@@ -101,14 +88,9 @@
       font-weight: 700;
     }
 
-    .field.invalid .error {
-      display: block;
-    }
+    .field.invalid .error { display: block; }
 
-    .options {
-      display: grid;
-      gap: 10px;
-    }
+    .options { display: grid; gap: 10px; }
 
     .checkline {
       display: flex;
@@ -118,12 +100,9 @@
       font-weight: 700;
     }
 
-    .checkline input {
-      width: auto;
-    }
+    .checkline input { width: auto; }
 
-    button,
-    .signup-link {
+    button, .signup-link {
       border: 0;
       border-radius: 8px;
       padding: 13px 18px;
@@ -136,14 +115,8 @@
       align-items: center;
     }
 
-    .primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .primary:hover {
-      background: var(--primary-dark);
-    }
+    .primary { background: var(--primary); color: #fff; }
+    .primary:hover { background: var(--primary-dark); }
 
     .secondary {
       background: #f3f6ff;
@@ -158,19 +131,9 @@
       font-weight: 700;
     }
 
-    .message.show {
-      display: block;
-    }
-
-    .message.good {
-      background: #e9f8f0;
-      color: var(--success);
-    }
-
-    .message.bad {
-      background: #ffe9e9;
-      color: var(--danger);
-    }
+    .message.show { display: block; }
+    .message.good { background: #e9f8f0; color: var(--success); }
+    .message.bad { background: #ffe9e9; color: var(--danger); }
 
     .signup-box {
       margin-top: 20px;
@@ -179,9 +142,7 @@
     }
 
     @media (max-width: 720px) {
-      .card {
-        grid-template-columns: 1fr;
-      }
+      .card { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -214,7 +175,6 @@
             <input id="showPassword" type="checkbox">
             Show password
           </label>
-
           <label class="checkline">
             <input id="rememberLogin" type="checkbox">
             Keep me logged in on this browser
@@ -231,111 +191,116 @@
       </div>
     </section>
   </main>
-<script>
-  const API_BASE = "https://study-platform-components.onrender.com";
 
-  const $ = (id) => document.getElementById(id);
+  <script>
+    // API Base URL - Updated to use your specific API
+    const API_BASE = 'https://study-platform-components.onrender.com';
 
-  const form = $('loginForm');
-  const usernameInput = $('username');
-  const passwordInput = $('password');
-  const showPasswordInput = $('showPassword');
-  const rememberLoginInput = $('rememberLogin');
-  const message = $('message');
+    const $ = (id) => document.getElementById(id);
 
-  function slug(value) {
-    return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-  }
+    const form = $('loginForm');
+    const usernameInput = $('username');
+    const passwordInput = $('password');
+    const showPasswordInput = $('showPassword');
+    const rememberLoginInput = $('rememberLogin');
+    const message = $('message');
 
-  function setFieldError(fieldId, text = '') {
-    const field = $(fieldId);
-    field.classList.toggle('invalid', Boolean(text));
-    field.querySelector('.error').textContent = text;
-  }
-
-  function setMessage(text = '', type = '') {
-    message.textContent = text;
-    message.className = text ? `message show ${type}` : 'message';
-  }
-
-  function clearErrors() {
-    setFieldError('usernameField');
-    setFieldError('passwordField');
-    setMessage();
-  }
-
-  function validateForm() {
-    clearErrors();
-    let valid = true;
-
-    if (!usernameInput.value.trim()) {
-      setFieldError('usernameField', 'Please enter your username.');
-      valid = false;
+    function slug(value) {
+      return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
     }
 
-    if (!passwordInput.value) {
-      setFieldError('passwordField', 'Please enter your password.');
-      valid = false;
-    } else if (passwordInput.value.length < 6) {
-      setFieldError('passwordField', 'Your password must be at least 6 characters.');
-      valid = false;
+    function setFieldError(fieldId, text = '') {
+      const field = $(fieldId);
+      field.classList.toggle('invalid', Boolean(text));
+      field.querySelector('.error').textContent = text;
     }
 
-    return valid;
-  }
+    function setMessage(text = '', type = '') {
+      message.textContent = text;
+      message.className = text ? `message show ${type}` : 'message';
+    }
 
-  async function checkExistingSession() {
-    try {
-      const response = await fetch(`${API_BASE}/api/session`, { credentials: 'same-origin' });
-      if (response.ok) location.href = 'index.html';
-    } catch {}
-  }
+    function clearErrors() {
+      setFieldError('usernameField');
+      setFieldError('passwordField');
+      setMessage();
+    }
 
-  async function login() {
-    setMessage('Checking your login...', 'good');
+    function validateForm() {
+      clearErrors();
+      let valid = true;
 
-    try {
-      const response = await fetch(`${API_BASE}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({
-          username: slug(usernameInput.value),
-          password: passwordInput.value,
-          remember: rememberLoginInput.checked
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setMessage(result.message || 'Incorrect username or password.', 'bad');
-        return;
+      if (!usernameInput.value.trim()) {
+        setFieldError('usernameField', 'Please enter your username.');
+        valid = false;
       }
 
-      setMessage('Login successful. Redirecting...', 'good');
-      setTimeout(() => {
-        location.href = result.redirect || 'index.html';
-      }, 500);
-    } catch {
-      setMessage('Could not connect to the server.', 'bad');
+      if (!passwordInput.value) {
+        setFieldError('passwordField', 'Please enter your password.');
+        valid = false;
+      } else if (passwordInput.value.length < 6) {
+        setFieldError('passwordField', 'Your password must be at least 6 characters.');
+        valid = false;
+      }
+
+      return valid;
     }
-  }
 
-  usernameInput.addEventListener('input', clearErrors);
-  passwordInput.addEventListener('input', clearErrors);
+    async function checkExistingSession() {
+      try {
+        const response = await fetch(`${API_BASE}/api/session`, { 
+          credentials: 'include' 
+        });
+        if (response.ok) location.href = 'index.html';
+      } catch {}
+    }
 
-  showPasswordInput.addEventListener('change', () => {
-    passwordInput.type = showPasswordInput.checked ? 'text' : 'password';
-  });
+    async function login() {
+      setMessage('Checking your login...', 'good');
 
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    usernameInput.value = slug(usernameInput.value);
-    if (validateForm()) login();
-  });
+      try {
+        const response = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: slug(usernameInput.value),
+            password: passwordInput.value,
+            remember: rememberLoginInput.checked
+          })
+        });
+        
+        const result = await response.json();
 
-  checkExistingSession();
-</script>
+        if (!response.ok) {
+          setMessage(result.message || 'Incorrect username or password.', 'bad');
+          return;
+        }
+
+        setMessage('Login successful. Redirecting...', 'good');
+        setTimeout(() => {
+          location.href = result.redirect || 'index.html';
+        }, 500);
+      } catch (err) {
+        console.error('Login error:', err);
+        setMessage('Could not connect to the server.', 'bad');
+      }
+    }
+
+    usernameInput.addEventListener('input', clearErrors);
+    passwordInput.addEventListener('input', clearErrors);
+
+    showPasswordInput.addEventListener('change', () => {
+      passwordInput.type = showPasswordInput.checked ? 'text' : 'password';
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      usernameInput.value = slug(usernameInput.value);
+      if (validateForm()) login();
+    });
+
+    checkExistingSession();
+  </script>
 </body>
 </html>
