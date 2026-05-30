@@ -38,13 +38,11 @@ app.post("/api/signup", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    // Create the user
     await pool.query(
       "INSERT INTO users (username, password, name, country, year) VALUES ($1, $2, $3, $4, $5)",
       [username, hashedPassword, name, country, year]
     );
 
-    // AUTO-LOGIN: Create token using the data we just submitted
     const token = jwt.sign({ username: username }, JWT_SECRET, {
       expiresIn: remember ? "7d" : "1d"
     });
@@ -135,9 +133,14 @@ app.get("/api/session", async (req, res) => {
   }
 });
 
-// LOGOUT
+// LOGOUT - FIXED: Added all cookie options to match the original cookie
 app.post("/api/logout", (req, res) => {
-  res.clearCookie("token", { path: "/" });
+  res.clearCookie("token", { 
+    path: "/",
+    httpOnly: true,
+    sameSite: "none",
+    secure: true
+  });
   res.json({ message: "Logged out" });
 });
 

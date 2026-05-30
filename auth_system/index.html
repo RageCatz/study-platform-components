@@ -109,7 +109,7 @@
   </main>
 
   <script>
-    // API Base URL
+    // API Base URL - Updated to your backend
     const API_BASE = 'https://study-platform-p3q7.onrender.com';
 
     const welcome = document.getElementById('welcome');
@@ -153,12 +153,18 @@
       progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
     }
 
+    // FIXED: Added try/catch and redirect handling
     document.getElementById('logout').addEventListener('click', async () => {
-      await fetch(`${API_BASE}/api/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      location.href = 'login.html';
+      try {
+        await fetch(`${API_BASE}/api/logout`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (e) {
+        console.log("Logout error:", e);
+      }
+      // Force redirect to login
+      window.location.href = 'login.html';
     });
 
     (async () => {
