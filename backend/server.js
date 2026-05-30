@@ -1,53 +1,45 @@
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-const session = require("express-session");
+const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
+require("dotenv").config();
 
 const app = express();
 
 app.use(cors({
-  origin: true,
+  origin: "*",
   credentials: true
 }));
 
 app.use(express.json());
 
-app.use(session({
-  secret: "change-this-later",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false // true later when using HTTPS
-  }
-}));
-
-// Neon DB connection (we add real link later)
+// Neon database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-// TEST route
+// TEST ROUTE
 app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
+  res.send("Backend is running");
 });
 
 // SIGNUP
 app.post("/api/signup", async (req, res) => {
-  const { name, username, password } = req.body;
+  const { username, password, name } = req.body;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    const hashed = await bcrypt.hash(password, 10);
-
     await pool.query(
-      "INSERT INTO users (name, username, password) VALUES ($1, $2, $3)",
-      [name, username, hashed]
+      "INSERT INTO users (username, password, name) VALUES ($1, $2, $3)",
+      [username, hashedPassword, name]
     );
 
-    res.json({ message: "Account created" });
+    res.json({ message: "User created" });
 
   } catch (err) {
-    res.status(500).json({ message: "Signup error" });
+    res.status(400).json({ message: "User already exists or error" });
   }
 });
 
@@ -55,53 +47,22 @@ app.post("/api/signup", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
-  try {
-    const result = await pool.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
-    );
+  const result = await pool.query(
+    "SELECT * FROM users WHERE username = $1",
+    [username]
+  );
 
-    if (result.rows.length === 0) {
-      return res.status(400).json({ message: "User not found" });
-    }
+  const user = result.rows[0];
 
-    const user = result.rows[0];
+  if (!user) return res.status(400).json({ message: "User not found" });
 
-    const match = await bcrypt.compare(password, user.password);
+  const valid = await bcrypt.compare(password, user.password);
 
-    if (!match) {
-      return res.status(400).json({ message: "Wrong password" });
-    }
+  if (!valid) return res.status(400).json({ message: "Wrong password" });
 
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      username: user.username
-    };
+  const token = jwt.sign({ id: user.id }, "secretkey");
 
-    res.json({
-      message: "Login successful",
-      user: req.session.user
-    });
-
-  } catch (err) {
-    res.status(500).json({ message: "Login error" });
-  }
-});
-
-// SESSION CHECK
-app.get("/api/session", (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ message: "No session" });
-  }
-  res.json({ user: req.session.user });
-});
-
-// LOGOUT
-app.post("/api/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.json({ message: "Logged out" });
-  });
+  res.json({ token, user });
 });
 
 app.listen(3000, () => {
