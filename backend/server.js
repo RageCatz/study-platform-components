@@ -9,7 +9,7 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors({
-  origin: true, // Allows credentials with any origin
+  origin: true,
   credentials: true
 }));
 
@@ -68,16 +68,14 @@ app.post("/api/login", async (req, res) => {
 
   if (!valid) return res.status(400).json({ message: "Wrong password" });
 
-  // Create JWT token
   const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
     expiresIn: remember ? "7d" : "1d"
   });
 
-  // Set cookie
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // Set to true in production with HTTPS
+    secure: false,
     maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
   });
 
@@ -91,7 +89,7 @@ app.post("/api/login", async (req, res) => {
   });
 });
 
-// SESSION - Check if logged in
+// SESSION
 app.get("/api/session", async (req, res) => {
   const token = req.cookies.token || req.headers.authorization?.replace("Bearer ", "");
 
@@ -125,7 +123,7 @@ app.post("/api/logout", (req, res) => {
   res.json({ message: "Logged out" });
 });
 
-// USER DATA - Get tasks and progress
+// USER DATA
 app.get("/api/user-data", async (req, res) => {
   const token = req.cookies.token || req.headers.authorization?.replace("Bearer ", "");
 
@@ -136,7 +134,6 @@ app.get("/api/user-data", async (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // Dummy data for now - replace with real database queries
     const data = {
       tasks: [
         { name: "Math homework", status: "pending", priority: "high", dueDate: "2025-01-20" },
