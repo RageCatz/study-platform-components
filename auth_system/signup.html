@@ -1,88 +1,532 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up</title>
-
   <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #fff;
+      --text: #1f2a44;
+      --muted: #64708d;
+      --line: #dce4f4;
+      --primary: #4f63d7;
+      --primary-dark: #3f50ad;
+      --accent: #eef7f1;
+      --danger: #c14e4e;
+      --success: #2f8e5d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial;
-      background: #f6f8fb;
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       display: grid;
       place-items: center;
-      height: 100vh;
+      padding: 24px;
     }
 
     .card {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      width: 340px;
+      width: min(900px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(41, 63, 115, .1);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
     }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
+    .intro {
+      background: var(--accent);
+      padding: 32px;
     }
 
-    button {
+    .intro h1,
+    .form h2 {
+      margin: 0 0 12px;
+    }
+
+    .intro p,
+    .form p,
+    .hint {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .form {
+      padding: 32px;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select {
       width: 100%;
-      padding: 10px;
-      background: #4f63d7;
-      color: white;
+      padding: 12px;
+      border: 1px solid #c9d5f1;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 3px solid #dfe7ff;
+      border-color: var(--primary);
+    }
+
+    .error {
+      display: none;
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 5px;
+      font-weight: 700;
+    }
+
+    .field.invalid input,
+    .field.invalid select {
+      border-color: #ff9f43;
+    }
+
+    .field.invalid .error {
+      display: block;
+    }
+
+    .status {
+      display: none;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 5px;
+    }
+
+    .status.good {
+      display: block;
+      color: var(--success);
+    }
+
+    .status.bad {
+      display: block;
+      color: var(--danger);
+    }
+
+    .checkline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .checkline input {
+      width: auto;
+    }
+
+    button,
+    .login-link {
       border: 0;
+      border-radius: 8px;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 800;
       cursor: pointer;
-      margin-top: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .msg { margin-top: 10px; }
+    .primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary {
+      background: #f3f6ff;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .message {
+      display: none;
+      padding: 12px;
+      border-radius: 8px;
+      background: #fff3df;
+      color: #8a5200;
+      font-weight: 700;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .login-box {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 29, 50, .42);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 18px 46px rgba(18, 28, 52, .18);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 760px) {
+      .card,
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
-
 <body>
-<div class="card">
-  <h2>Sign Up</h2>
+  <main class="card">
+    <section class="intro">
+      <h1>FocusFlow</h1>
+      <p>Create your study account. Your tasks, focus sessions, settings, and progress will be saved under your username.</p>
+    </section>
 
-  <input id="name" placeholder="full name">
-  <input id="username" placeholder="username">
-  <input id="password" type="password" placeholder="password">
+    <section class="form">
+      <h2>Sign up</h2>
+      <p>Make your account first, then you can log in any time.</p>
 
-  <button onclick="signup()">Create Account</button>
+      <form id="signupForm" novalidate>
+        <div class="row">
+          <div class="field" id="nameField">
+            <label for="name">Full name</label>
+            <input id="name" autocomplete="name" placeholder="Your name">
+            <div class="error"></div>
+          </div>
 
-  <p class="msg" id="msg"></p>
+          <div class="field" id="usernameField">
+            <label for="username">Username</label>
+            <input id="username" autocomplete="username" placeholder="Choose a username">
+            <div class="error"></div>
+          </div>
+        </div>
 
-  <p><a href="login.html">Go to Login</a></p>
-</div>
+        <div class="row">
+          <div class="field" id="countryField">
+            <label for="country">Country</label>
+            <input id="country" autocomplete="country-name" value="New Zealand">
+            <div class="error"></div>
+          </div>
 
-<script>
-function slug(v) {
-  return v.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_");
-}
+          <div class="field">
+            <label for="year">Year level</label>
+            <select id="year">
+              <option>Year 9</option>
+              <option>Year 10</option>
+              <option>Year 11</option>
+              <option>Year 12</option>
+              <option>Year 13</option>
+            </select>
+          </div>
+        </div>
 
-function signup() {
-  const name = document.getElementById("name").value.trim();
-  const username = slug(document.getElementById("username").value);
-  const password = document.getElementById("password").value;
+        <div class="row">
+          <div class="field" id="passwordField">
+            <label for="password">Password</label>
+            <input id="password" type="password" autocomplete="new-password" placeholder="Create a password">
+            <div class="error"></div>
+            <div id="passwordStatus" class="status"></div>
+          </div>
 
-  if (!name || !username || !password) {
-    document.getElementById("msg").textContent = "Fill all fields";
-    return;
-  }
+          <div class="field" id="confirmField">
+            <label for="confirmPassword">Confirm password</label>
+            <input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm your password">
+            <div class="error"></div>
+            <div id="matchStatus" class="status"></div>
+          </div>
+        </div>
 
-  // TEMP SAVE
-  localStorage.setItem("user", JSON.stringify({
-    name,
-    username
-  }));
+        <label class="checkline">
+          <input id="showPassword" type="checkbox">
+          Show passwords
+        </label>
 
-  document.getElementById("msg").textContent = "Account created!";
+        <div class="hint">Password rules: at least 6 characters, at least 1 number, and letters or numbers only.</div>
+        <button class="primary" type="submit">Create Account</button>
+        <div id="formMessage" class="message" role="alert"></div>
+      </form>
 
-  setTimeout(() => {
-    window.location.href = "index.html";
-  }, 500);
-}
-</script>
+      <div class="login-box">
+        <strong>Already have an account?</strong>
+        <p><a class="login-link secondary" href="login.html">Go to Login</a></p>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="saveModal">
+    <div class="modal-card">
+      <h2>Stay logged in?</h2>
+      <p class="hint">Use a secure browser cookie so this browser can stay signed in without saving your password in the page.</p>
+      <div class="modal-actions">
+        <button class="secondary" id="saveNo" type="button">No thanks</button>
+        <button class="primary" id="saveYes" type="button">Yes, keep me signed in</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const form = $('signupForm');
+    const nameInput = $('name');
+    const usernameInput = $('username');
+    const countryInput = $('country');
+    const yearInput = $('year');
+    const passwordInput = $('password');
+    const confirmInput = $('confirmPassword');
+    const showPasswordInput = $('showPassword');
+    const formMessage = $('formMessage');
+    const saveModal = $('saveModal');
+    const saveYesButton = $('saveYes');
+    const saveNoButton = $('saveNo');
+
+    let pendingSignup = null;
+
+    function slug(value) {
+      return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }
+
+    function isStrongPassword(password) {
+      return /^(?=.*\d)[A-Za-z0-9]{6,}$/.test(password);
+    }
+
+    function setFieldError(fieldId, message = '') {
+      const field = $(fieldId);
+      field.classList.toggle('invalid', Boolean(message));
+      field.querySelector('.error').textContent = message;
+    }
+
+    function setMessage(message = '') {
+      formMessage.textContent = message;
+      formMessage.classList.toggle('show', Boolean(message));
+    }
+
+    function setModalBusy(isBusy) {
+      saveYesButton.disabled = isBusy;
+      saveNoButton.disabled = isBusy;
+      saveYesButton.textContent = isBusy ? 'Creating account...' : 'Yes, keep me signed in';
+      saveNoButton.textContent = isBusy ? 'Creating account...' : 'No thanks';
+    }
+
+    function clearErrors() {
+      ['nameField', 'usernameField', 'countryField', 'passwordField', 'confirmField'].forEach((id) => setFieldError(id));
+      setMessage();
+    }
+
+    function updatePasswordStatus() {
+      const password = passwordInput.value;
+      const confirmPassword = confirmInput.value;
+      const passwordStatus = $('passwordStatus');
+      const matchStatus = $('matchStatus');
+
+      passwordStatus.className = 'status';
+      matchStatus.className = 'status';
+      passwordStatus.textContent = '';
+      matchStatus.textContent = '';
+
+      if (password) {
+        const valid = isStrongPassword(password);
+        passwordStatus.textContent = valid ? 'Password looks good.' : 'Use at least 6 characters, 1 number, and no special characters.';
+        passwordStatus.classList.add(valid ? 'good' : 'bad');
+      }
+
+      if (confirmPassword) {
+        const matches = password === confirmPassword;
+        matchStatus.textContent = matches ? 'Passwords match.' : 'Passwords do not match yet.';
+        matchStatus.classList.add(matches ? 'good' : 'bad');
+      }
+    }
+
+    function validateForm() {
+      clearErrors();
+
+      const name = nameInput.value.trim();
+      const username = slug(usernameInput.value);
+      const country = countryInput.value.trim();
+      const password = passwordInput.value;
+      const confirmPassword = confirmInput.value;
+      let valid = true;
+
+      if (!name) {
+        setFieldError('nameField', 'Please enter your full name.');
+        valid = false;
+      }
+
+      if (!username) {
+        setFieldError('usernameField', 'Please choose a username.');
+        valid = false;
+      }
+
+      if (!country) {
+        setFieldError('countryField', 'Please enter your country.');
+        valid = false;
+      }
+
+      if (!password) {
+        setFieldError('passwordField', 'Please create a password.');
+        valid = false;
+      } else if (!isStrongPassword(password)) {
+        setFieldError('passwordField', 'Use at least 6 characters, 1 number, and no special characters.');
+        valid = false;
+      }
+
+      if (!confirmPassword) {
+        setFieldError('confirmField', 'Please confirm your password.');
+        valid = false;
+      } else if (password !== confirmPassword) {
+        setFieldError('confirmField', 'Passwords do not match.');
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    async function checkExistingSession() {
+      try {
+        const response = await fetch('/api/session', { credentials: 'same-origin' });
+        if (response.ok) location.href = 'index.html';
+      } catch {}
+    }
+
+    async function createAccount(remember) {
+      if (!pendingSignup) return;
+
+      setModalBusy(true);
+      setMessage('Creating your account...');
+
+      try {
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ ...pendingSignup, remember })
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+          saveModal.classList.remove('open');
+          if (result.field) setFieldError(result.field, result.message || 'Please check this field.');
+          setMessage(result.message || 'Could not create the account.');
+          return;
+        }
+
+        const sessionResponse = await fetch('/api/session', { credentials: 'same-origin' });
+        if (!sessionResponse.ok) {
+          saveModal.classList.remove('open');
+          setMessage('The account was created, but your session could not be verified.', 'bad');
+          return;
+        }
+
+        saveModal.classList.remove('open');
+        setMessage('Account created. Redirecting...');
+        setTimeout(() => {
+          location.replace(result.redirect || 'index.html');
+        }, 500);
+      } catch {
+        saveModal.classList.remove('open');
+        setMessage('Could not connect to the server.', 'bad');
+      } finally {
+        setModalBusy(false);
+      }
+    }
+
+    [nameInput, usernameInput, countryInput].forEach((input) => {
+      input.addEventListener('input', clearErrors);
+    });
+
+    [passwordInput, confirmInput].forEach((input) => {
+      input.addEventListener('input', () => {
+        clearErrors();
+        updatePasswordStatus();
+      });
+    });
+
+    showPasswordInput.addEventListener('change', () => {
+      const type = showPasswordInput.checked ? 'text' : 'password';
+      passwordInput.type = type;
+      confirmInput.type = type;
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      nameInput.value = nameInput.value.trim();
+      usernameInput.value = slug(usernameInput.value);
+      countryInput.value = countryInput.value.trim();
+      updatePasswordStatus();
+
+      if (!validateForm()) return;
+
+      pendingSignup = {
+        name: nameInput.value,
+        username: usernameInput.value,
+        country: countryInput.value,
+        year: yearInput.value,
+        password: passwordInput.value
+      };
+      saveModal.classList.add('open');
+    });
+
+    saveYesButton.addEventListener('click', () => createAccount(true));
+    saveNoButton.addEventListener('click', () => createAccount(false));
+
+    checkExistingSession();
+  </script>
 </body>
 </html>
