@@ -8,6 +8,8 @@ require("dotenv").config();
 
 const app = express();
 
+// IMPORTANT: Change this to your Vercel URL when you know it!
+// For now, we allow all origins to test
 app.use(cors({
   origin: true,
   credentials: true
@@ -72,11 +74,13 @@ app.post("/api/login", async (req, res) => {
     expiresIn: remember ? "7d" : "1d"
   });
 
+  // Set cookie with correct settings for cross-origin
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-    maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
+    sameSite: "none", // Changed to "none" for cross-origin cookies
+    secure: true,
+    maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
+    path: "/"
   });
 
   res.json({ 
@@ -119,7 +123,7 @@ app.get("/api/session", async (req, res) => {
 
 // LOGOUT
 app.post("/api/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", { path: "/" });
   res.json({ message: "Logged out" });
 });
 
