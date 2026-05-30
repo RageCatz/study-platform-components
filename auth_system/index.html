@@ -116,63 +116,64 @@
       <p id="progress"></p>
     </section>
   </main>
+<script>
+  const API_BASE = "https://study-platform-components.onrender.com";
 
-  <script>
-    const welcome = document.getElementById('welcome');
-    const tasksList = document.getElementById('tasks');
-    const progress = document.getElementById('progress');
+  const welcome = document.getElementById('welcome');
+  const tasksList = document.getElementById('tasks');
+  const progress = document.getElementById('progress');
 
-    async function requireSession() {
-      const response = await fetch('/api/session', { credentials: 'same-origin' });
+  async function requireSession() {
+    const response = await fetch(`${API_BASE}/api/session`, { credentials: 'same-origin' });
 
-      if (!response.ok) {
-        location.href = 'login.html';
-        return null;
-      }
-
-      const result = await response.json();
-      return result.user;
-    }
-
-    async function loadUserData() {
-      const response = await fetch('/api/user-data', { credentials: 'same-origin' });
-
-      if (!response.ok) {
-        tasksList.innerHTML = '<li class="task">No saved data found.</li>';
-        return;
-      }
-
-      const result = await response.json();
-      const data = result.data;
-
-      tasksList.innerHTML = data.tasks.map((task) => `
-        <li class="task">
-          <span>${task.name}</span>
-          <span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span>
-        </li>
-      `).join('');
-
-      progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
-    }
-
-    document.getElementById('logout').addEventListener('click', async () => {
-      await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'same-origin'
-      });
+    if (!response.ok) {
       location.href = 'login.html';
-    });
+      return null;
+    }
 
-    (async () => {
-      try {
-        const user = await requireSession();
-        if (!user) return;
-        welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
-        await loadUserData();
-      } catch {
-        location.href = 'login.html';
-      }
-    })();
-  </script>
+    const result = await response.json();
+    return result.user;
+  }
+
+  async function loadUserData() {
+    const response = await fetch(`${API_BASE}/api/user-data`, { credentials: 'same-origin' });
+
+    if (!response.ok) {
+      tasksList.innerHTML = '<li class="task">No saved data found.</li>';
+      return;
+    }
+
+    const result = await response.json();
+    const data = result.data;
+
+    tasksList.innerHTML = data.tasks.map((task) => `
+      <li class="task">
+        <span>${task.name}</span>
+        <span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span>
+      </li>
+    `).join('');
+
+    progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
+  }
+
+  document.getElementById('logout').addEventListener('click', async () => {
+    await fetch(`${API_BASE}/api/logout`, {
+      method: 'POST',
+      credentials: 'same-origin'
+    });
+    location.href = 'login.html';
+  });
+
+  (async () => {
+    try {
+      const user = await requireSession();
+      if (!user) return;
+      welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
+      await loadUserData();
+    } catch {
+      location.href = 'login.html';
+    }
+  })();
+</script>
 </body>
 </html>

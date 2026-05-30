@@ -320,213 +320,64 @@
     </div>
   </div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
+ <script>
+  const API_BASE = "https://study-platform-components.onrender.com";
 
-    const form = $('signupForm');
-    const nameInput = $('name');
-    const usernameInput = $('username');
-    const countryInput = $('country');
-    const yearInput = $('year');
-    const passwordInput = $('password');
-    const confirmInput = $('confirmPassword');
-    const showPasswordInput = $('showPassword');
-    const formMessage = $('formMessage');
-    const saveModal = $('saveModal');
-    const saveYesButton = $('saveYes');
-    const saveNoButton = $('saveNo');
+  const welcome = document.getElementById('welcome');
+  const tasksList = document.getElementById('tasks');
+  const progress = document.getElementById('progress');
 
-    let pendingSignup = null;
+  async function requireSession() {
+    const response = await fetch(`${API_BASE}/api/session`, { credentials: 'include' });
 
-    function slug(value) {
-      return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    if (!response.ok) {
+      location.href = 'login.html';
+      return null;
     }
 
-    function isStrongPassword(password) {
-      return /^(?=.*\d)[A-Za-z0-9]{6,}$/.test(password);
+    const result = await response.json();
+    return result.user;
+  }
+
+  async function loadUserData() {
+    const response = await fetch(`${API_BASE}/api/user-data`, { credentials: 'include' });
+
+    if (!response.ok) {
+      tasksList.innerHTML = '<li class="task">No saved data found.</li>';
+      return;
     }
 
-    function setFieldError(fieldId, message = '') {
-      const field = $(fieldId);
-      field.classList.toggle('invalid', Boolean(message));
-      field.querySelector('.error').textContent = message;
-    }
+    const result = await response.json();
+    const data = result.data;
 
-    function setMessage(message = '') {
-      formMessage.textContent = message;
-      formMessage.classList.toggle('show', Boolean(message));
-    }
+    tasksList.innerHTML = data.tasks.map((task) => `
+      <li class="task">
+        <span>${task.name}</span>
+        <span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span>
+      </li>
+    `).join('');
 
-    function setModalBusy(isBusy) {
-      saveYesButton.disabled = isBusy;
-      saveNoButton.disabled = isBusy;
-      saveYesButton.textContent = isBusy ? 'Creating account...' : 'Yes, keep me signed in';
-      saveNoButton.textContent = isBusy ? 'Creating account...' : 'No thanks';
-    }
+    progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
+  }
 
-    function clearErrors() {
-      ['nameField', 'usernameField', 'countryField', 'passwordField', 'confirmField'].forEach((id) => setFieldError(id));
-      setMessage();
-    }
-
-    function updatePasswordStatus() {
-      const password = passwordInput.value;
-      const confirmPassword = confirmInput.value;
-      const passwordStatus = $('passwordStatus');
-      const matchStatus = $('matchStatus');
-
-      passwordStatus.className = 'status';
-      matchStatus.className = 'status';
-      passwordStatus.textContent = '';
-      matchStatus.textContent = '';
-
-      if (password) {
-        const valid = isStrongPassword(password);
-        passwordStatus.textContent = valid ? 'Password looks good.' : 'Use at least 6 characters, 1 number, and no special characters.';
-        passwordStatus.classList.add(valid ? 'good' : 'bad');
-      }
-
-      if (confirmPassword) {
-        const matches = password === confirmPassword;
-        matchStatus.textContent = matches ? 'Passwords match.' : 'Passwords do not match yet.';
-        matchStatus.classList.add(matches ? 'good' : 'bad');
-      }
-    }
-
-    function validateForm() {
-      clearErrors();
-
-      const name = nameInput.value.trim();
-      const username = slug(usernameInput.value);
-      const country = countryInput.value.trim();
-      const password = passwordInput.value;
-      const confirmPassword = confirmInput.value;
-      let valid = true;
-
-      if (!name) {
-        setFieldError('nameField', 'Please enter your full name.');
-        valid = false;
-      }
-
-      if (!username) {
-        setFieldError('usernameField', 'Please choose a username.');
-        valid = false;
-      }
-
-      if (!country) {
-        setFieldError('countryField', 'Please enter your country.');
-        valid = false;
-      }
-
-      if (!password) {
-        setFieldError('passwordField', 'Please create a password.');
-        valid = false;
-      } else if (!isStrongPassword(password)) {
-        setFieldError('passwordField', 'Use at least 6 characters, 1 number, and no special characters.');
-        valid = false;
-      }
-
-      if (!confirmPassword) {
-        setFieldError('confirmField', 'Please confirm your password.');
-        valid = false;
-      } else if (password !== confirmPassword) {
-        setFieldError('confirmField', 'Passwords do not match.');
-        valid = false;
-      }
-
-      return valid;
-    }
-
-    async function checkExistingSession() {
-      try {
-        const response = await fetch('/api/session', { credentials: 'same-origin' });
-        if (response.ok) location.href = 'index.html';
-      } catch {}
-    }
-
-    async function createAccount(remember) {
-      if (!pendingSignup) return;
-
-      setModalBusy(true);
-      setMessage('Creating your account...');
-
-      try {
-        const response = await fetch('/api/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({ ...pendingSignup, remember })
-        });
-        const result = await response.json();
-
-        if (!response.ok) {
-          saveModal.classList.remove('open');
-          if (result.field) setFieldError(result.field, result.message || 'Please check this field.');
-          setMessage(result.message || 'Could not create the account.');
-          return;
-        }
-
-        const sessionResponse = await fetch('/api/session', { credentials: 'same-origin' });
-        if (!sessionResponse.ok) {
-          saveModal.classList.remove('open');
-          setMessage('The account was created, but your session could not be verified.', 'bad');
-          return;
-        }
-
-        saveModal.classList.remove('open');
-        setMessage('Account created. Redirecting...');
-        setTimeout(() => {
-          location.replace(result.redirect || 'index.html');
-        }, 500);
-      } catch {
-        saveModal.classList.remove('open');
-        setMessage('Could not connect to the server.', 'bad');
-      } finally {
-        setModalBusy(false);
-      }
-    }
-
-    [nameInput, usernameInput, countryInput].forEach((input) => {
-      input.addEventListener('input', clearErrors);
+  document.getElementById('logout').addEventListener('click', async () => {
+    await fetch(`${API_BASE}/api/logout`, {
+      method: 'POST',
+      credentials: 'include'
     });
+    location.href = 'login.html';
+  });
 
-    [passwordInput, confirmInput].forEach((input) => {
-      input.addEventListener('input', () => {
-        clearErrors();
-        updatePasswordStatus();
-      });
-    });
-
-    showPasswordInput.addEventListener('change', () => {
-      const type = showPasswordInput.checked ? 'text' : 'password';
-      passwordInput.type = type;
-      confirmInput.type = type;
-    });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-
-      nameInput.value = nameInput.value.trim();
-      usernameInput.value = slug(usernameInput.value);
-      countryInput.value = countryInput.value.trim();
-      updatePasswordStatus();
-
-      if (!validateForm()) return;
-
-      pendingSignup = {
-        name: nameInput.value,
-        username: usernameInput.value,
-        country: countryInput.value,
-        year: yearInput.value,
-        password: passwordInput.value
-      };
-      saveModal.classList.add('open');
-    });
-
-    saveYesButton.addEventListener('click', () => createAccount(true));
-    saveNoButton.addEventListener('click', () => createAccount(false));
-
-    checkExistingSession();
-  </script>
+  (async () => {
+    try {
+      const user = await requireSession();
+      if (!user) return;
+      welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
+      await loadUserData();
+    } catch {
+      location.href = 'login.html';
+    }
+  })();
+</script>
 </body>
 </html>

@@ -231,109 +231,111 @@
       </div>
     </section>
   </main>
+<script>
+  const API_BASE = "https://study-platform-components.onrender.com";
 
-  <script>
-    const $ = (id) => document.getElementById(id);
+  const $ = (id) => document.getElementById(id);
 
-    const form = $('loginForm');
-    const usernameInput = $('username');
-    const passwordInput = $('password');
-    const showPasswordInput = $('showPassword');
-    const rememberLoginInput = $('rememberLogin');
-    const message = $('message');
+  const form = $('loginForm');
+  const usernameInput = $('username');
+  const passwordInput = $('password');
+  const showPasswordInput = $('showPassword');
+  const rememberLoginInput = $('rememberLogin');
+  const message = $('message');
 
-    function slug(value) {
-      return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  function slug(value) {
+    return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+
+  function setFieldError(fieldId, text = '') {
+    const field = $(fieldId);
+    field.classList.toggle('invalid', Boolean(text));
+    field.querySelector('.error').textContent = text;
+  }
+
+  function setMessage(text = '', type = '') {
+    message.textContent = text;
+    message.className = text ? `message show ${type}` : 'message';
+  }
+
+  function clearErrors() {
+    setFieldError('usernameField');
+    setFieldError('passwordField');
+    setMessage();
+  }
+
+  function validateForm() {
+    clearErrors();
+    let valid = true;
+
+    if (!usernameInput.value.trim()) {
+      setFieldError('usernameField', 'Please enter your username.');
+      valid = false;
     }
 
-    function setFieldError(fieldId, text = '') {
-      const field = $(fieldId);
-      field.classList.toggle('invalid', Boolean(text));
-      field.querySelector('.error').textContent = text;
+    if (!passwordInput.value) {
+      setFieldError('passwordField', 'Please enter your password.');
+      valid = false;
+    } else if (passwordInput.value.length < 6) {
+      setFieldError('passwordField', 'Your password must be at least 6 characters.');
+      valid = false;
     }
 
-    function setMessage(text = '', type = '') {
-      message.textContent = text;
-      message.className = text ? `message show ${type}` : 'message';
-    }
+    return valid;
+  }
 
-    function clearErrors() {
-      setFieldError('usernameField');
-      setFieldError('passwordField');
-      setMessage();
-    }
+  async function checkExistingSession() {
+    try {
+      const response = await fetch(`${API_BASE}/api/session`, { credentials: 'same-origin' });
+      if (response.ok) location.href = 'index.html';
+    } catch {}
+  }
 
-    function validateForm() {
-      clearErrors();
-      let valid = true;
+  async function login() {
+    setMessage('Checking your login...', 'good');
 
-      if (!usernameInput.value.trim()) {
-        setFieldError('usernameField', 'Please enter your username.');
-        valid = false;
+    try {
+      const response = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          username: slug(usernameInput.value),
+          password: passwordInput.value,
+          remember: rememberLoginInput.checked
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setMessage(result.message || 'Incorrect username or password.', 'bad');
+        return;
       }
 
-      if (!passwordInput.value) {
-        setFieldError('passwordField', 'Please enter your password.');
-        valid = false;
-      } else if (passwordInput.value.length < 6) {
-        setFieldError('passwordField', 'Your password must be at least 6 characters.');
-        valid = false;
-      }
-
-      return valid;
+      setMessage('Login successful. Redirecting...', 'good');
+      setTimeout(() => {
+        location.href = result.redirect || 'index.html';
+      }, 500);
+    } catch {
+      setMessage('Could not connect to the server.', 'bad');
     }
+  }
 
-    async function checkExistingSession() {
-      try {
-        const response = await fetch('/api/session', { credentials: 'same-origin' });
-        if (response.ok) location.href = 'index.html';
-      } catch {}
-    }
+  usernameInput.addEventListener('input', clearErrors);
+  passwordInput.addEventListener('input', clearErrors);
 
-    async function login() {
-      setMessage('Checking your login...', 'good');
+  showPasswordInput.addEventListener('change', () => {
+    passwordInput.type = showPasswordInput.checked ? 'text' : 'password';
+  });
 
-      try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify({
-            username: slug(usernameInput.value),
-            password: passwordInput.value,
-            remember: rememberLoginInput.checked
-          })
-        });
-        const result = await response.json();
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    usernameInput.value = slug(usernameInput.value);
+    if (validateForm()) login();
+  });
 
-        if (!response.ok) {
-          setMessage(result.message || 'Incorrect username or password.', 'bad');
-          return;
-        }
-
-        setMessage('Login successful. Redirecting...', 'good');
-        setTimeout(() => {
-          location.href = result.redirect || 'index.html';
-        }, 500);
-      } catch {
-        setMessage('Could not connect to the server.', 'bad');
-      }
-    }
-
-    usernameInput.addEventListener('input', clearErrors);
-    passwordInput.addEventListener('input', clearErrors);
-
-    showPasswordInput.addEventListener('change', () => {
-      passwordInput.type = showPasswordInput.checked ? 'text' : 'password';
-    });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      usernameInput.value = slug(usernameInput.value);
-      if (validateForm()) login();
-    });
-
-    checkExistingSession();
-  </script>
+  checkExistingSession();
+</script>
 </body>
 </html>
