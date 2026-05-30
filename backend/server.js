@@ -44,8 +44,8 @@ app.post("/api/signup", async (req, res) => {
       [username, hashedPassword, name, country, year]
     );
 
-    // AUTO-LOGIN: Create token and set cookie immediately after signup
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+    // AUTO-LOGIN: Create token using the data we just submitted
+    const token = jwt.sign({ username: username }, JWT_SECRET, {
       expiresIn: remember ? "7d" : "1d"
     });
 
@@ -119,8 +119,8 @@ app.get("/api/session", async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     
     const result = await pool.query(
-      "SELECT id, username, name, country, year FROM users WHERE id = $1",
-      [decoded.id]
+      "SELECT id, username, name, country, year FROM users WHERE username = $1",
+      [decoded.username]
     );
 
     const user = result.rows[0];
