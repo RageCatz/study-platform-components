@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
+
   <style>
     :root {
       --bg: #f6f8fb;
@@ -15,9 +16,7 @@
       --success: #2f8e5d;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -28,28 +27,12 @@
       padding: 24px;
     }
 
-    main {
-      width: min(900px, 100%);
-      margin: 0 auto;
-    }
+    main { width: min(900px, 100%); margin: 0 auto; }
 
     header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 16px;
       margin-bottom: 24px;
-    }
-
-    h1,
-    h2,
-    p {
-      margin-top: 0;
-    }
-
-    p {
-      color: var(--muted);
-      line-height: 1.5;
     }
 
     .panel {
@@ -57,122 +40,90 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 24px;
-      box-shadow: 0 12px 32px rgba(41, 63, 115, .08);
       margin-bottom: 16px;
     }
 
-    .tasks {
-      display: grid;
-      gap: 10px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-    }
+    .tasks { list-style: none; padding: 0; display: grid; gap: 10px; }
 
     .task {
       border: 1px solid var(--line);
-      border-radius: 8px;
       padding: 12px;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
     }
 
-    .pill {
-      color: var(--success);
-      font-weight: 700;
-    }
+    .pill { color: var(--success); font-weight: 700; }
 
     button {
+      padding: 10px 14px;
       border: 0;
       border-radius: 8px;
-      padding: 11px 16px;
-      font: inherit;
-      font-weight: 800;
-      cursor: pointer;
       background: var(--primary);
-      color: #fff;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
     }
   </style>
 </head>
+
 <body>
-  <main>
-    <header>
-      <div>
-        <h1>Welcome</h1>
-        <p id="welcome">Loading your SQL-backed account...</p>
-      </div>
-      <button id="logout" type="button">Log Out</button>
-    </header>
+<main>
+  <header>
+    <div>
+      <h1>Welcome</h1>
+      <p id="welcome">Loading...</p>
+    </div>
 
-    <section class="panel">
-      <h2>Your Tasks</h2>
-      <ul class="tasks" id="tasks"></ul>
-    </section>
+    <button id="logout">Log Out</button>
+  </header>
 
-    <section class="panel">
-      <h2>Progress</h2>
-      <p id="progress"></p>
-    </section>
-  </main>
+  <section class="panel">
+    <h2>Your Tasks</h2>
+    <ul id="tasks" class="tasks"></ul>
+  </section>
 
-  <script>
-    const welcome = document.getElementById('welcome');
-    const tasksList = document.getElementById('tasks');
-    const progress = document.getElementById('progress');
+  <section class="panel">
+    <h2>Progress</h2>
+    <p id="progress"></p>
+  </section>
+</main>
 
-    async function requireSession() {
-      const response = await fetch('/api/session', { credentials: 'same-origin' });
+<script>
+  const user = JSON.parse(localStorage.getItem("user"));
 
-      if (!response.ok) {
-        location.href = 'login.html';
-        return null;
-      }
+  if (!user) {
+    window.location.href = "login.html";
+  }
 
-      const result = await response.json();
-      return result.user;
+  document.getElementById("welcome").textContent =
+    `Welcome, ${user.name} (@${user.username})`;
+
+  const data = {
+    tasks: [
+      { name: "Study Math", status: "doing", priority: "high", dueDate: "today" }
+    ],
+    progress: {
+      focusMinutesToday: 25,
+      totalSessions: 2
     }
+  };
 
-    async function loadUserData() {
-      const response = await fetch('/api/user-data', { credentials: 'same-origin' });
+  document.getElementById("tasks").innerHTML =
+    data.tasks.map(t => `
+      <li class="task">
+        <span>${t.name}</span>
+        <span class="pill">${t.status} - ${t.priority}</span>
+      </li>
+    `).join("");
 
-      if (!response.ok) {
-        tasksList.innerHTML = '<li class="task">No saved data found.</li>';
-        return;
-      }
+  document.getElementById("progress").textContent =
+    `${data.progress.focusMinutesToday} minutes today, ${data.progress.totalSessions} sessions`;
 
-      const result = await response.json();
-      const data = result.data;
-
-      tasksList.innerHTML = data.tasks.map((task) => `
-        <li class="task">
-          <span>${task.name}</span>
-          <span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span>
-        </li>
-      `).join('');
-
-      progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
-    }
-
-    document.getElementById('logout').addEventListener('click', async () => {
-      await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'same-origin'
-      });
-      location.href = 'login.html';
-    });
-
-    (async () => {
-      try {
-        const user = await requireSession();
-        if (!user) return;
-        welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
-        await loadUserData();
-      } catch {
-        location.href = 'login.html';
-      }
-    })();
-  </script>
+  document.getElementById("logout").addEventListener("click", () => {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  });
+</script>
 </body>
 </html>
