@@ -8,8 +8,6 @@ require("dotenv").config();
 
 const app = express();
 
-// IMPORTANT: Change this to your Vercel URL when you know it!
-// For now, we allow all origins to test
 app.use(cors({
   origin: true,
   credentials: true
@@ -31,7 +29,7 @@ app.get("/", (req, res) => {
 
 // SIGNUP
 app.post("/api/signup", async (req, res) => {
-  const { username, password, name, country, year } = req.body;
+  const { username, password, name, country, year, remember } = req.body;
 
   if (!username || !password || !name) {
     return res.status(400).json({ message: "Missing fields" });
@@ -40,12 +38,29 @@ app.post("/api/signup", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
+    // Create the user
     await pool.query(
       "INSERT INTO users (username, password, name, country, year) VALUES ($1, $2, $3, $4, $5)",
       [username, hashedPassword, name, country, year]
     );
 
-    res.json({ message: "User created" });
+    // AUTO-LOGIN: Create token and set cookie immediately after signup
+    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+      expiresIn: remember ? "7d" : "1d"
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
+      path: "/"
+    });
+
+    res.json({ 
+      message: "User created", 
+      redirect: "index.html"
+    });
 
   } catch (err) {
     console.error(err);
@@ -74,10 +89,9 @@ app.post("/api/login", async (req, res) => {
     expiresIn: remember ? "7d" : "1d"
   });
 
-  // Set cookie with correct settings for cross-origin
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "none", // Changed to "none" for cross-origin cookies
+    sameSite: "none",
     secure: true,
     maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
     path: "/"
