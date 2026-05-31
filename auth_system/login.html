@@ -246,7 +246,7 @@
       return valid;
     }
 
-    // REMOVED - No more auto-redirect to dashboard
+    // REMOVED: checkExistingSession() - This was auto-redirecting to dashboard
 
     async function login() {
       setMessage('Checking your login...', 'good');
@@ -272,7 +272,7 @@
 
         setMessage('Login successful. Redirecting...', 'good');
         setTimeout(() => {
-          location.href = result.redirect || 'dashboard.html';
+          location.href = result.redirect || 'index.html';
         }, 500);
       } catch (err) {
         console.error('Login error:', err);

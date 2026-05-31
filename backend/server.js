@@ -22,10 +22,12 @@ const pool = new Pool({
 
 const JWT_SECRET = "secretkey";
 
+// TEST ROUTE
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
+// SIGNUP
 app.post("/api/signup", async (req, res) => {
   const { username, password, name, country, year, remember } = req.body;
 
@@ -53,6 +55,7 @@ app.post("/api/signup", async (req, res) => {
       path: "/"
     });
 
+    // FIXED: Changed from "index.html" to "dashboard.html"
     res.json({ 
       message: "User created", 
       redirect: "dashboard.html"
@@ -64,6 +67,7 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
+// LOGIN
 app.post("/api/login", async (req, res) => {
   const { username, password, remember } = req.body;
 
@@ -92,6 +96,7 @@ app.post("/api/login", async (req, res) => {
     path: "/"
   });
 
+  // FIXED: Changed from "index.html" to "dashboard.html"
   res.json({ 
     token, 
     user: { 
@@ -102,6 +107,7 @@ app.post("/api/login", async (req, res) => {
   });
 });
 
+// SESSION
 app.get("/api/session", async (req, res) => {
   const token = req.cookies.token || req.headers.authorization?.replace("Bearer ", "");
 
@@ -129,6 +135,7 @@ app.get("/api/session", async (req, res) => {
   }
 });
 
+// LOGOUT
 app.post("/api/logout", (req, res) => {
   res.clearCookie("token", { 
     path: "/",
@@ -139,6 +146,7 @@ app.post("/api/logout", (req, res) => {
   res.json({ message: "Logged out" });
 });
 
+// USER DATA
 app.get("/api/user-data", async (req, res) => {
   const token = req.cookies.token || req.headers.authorization?.replace("Bearer ", "");
 
