@@ -3,75 +3,172 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
+  <title>Login</title>
   <style>
     :root {
-      --bg: #f6f8fb; --panel: #fff; --text: #1f2a44;
-      --muted: #64708d; --line: #dce4f4; --primary: #4f63d7; --success: #2f8e5d;
+      --bg: #f6f8fb;
+      --panel: #fff;
+      --text: #1f2a44;
+      --muted: #64708d;
+      --line: #dce4f4;
+      --primary: #4f63d7;
+      --primary-dark: #3f50ad;
+      --accent: #eef7f1;
+      --danger: #c14e4e;
+      --success: #2f8e5d;
     }
+
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); padding: 24px; }
-    main { width: min(900px, 100%); margin: 0 auto; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
-    h1, h2, p { margin-top: 0; }
-    p { color: var(--muted); line-height: 1.5; }
-    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 24px; box-shadow: 0 12px 32px rgba(41, 63, 115, .08); margin-bottom: 16px; }
-    .tasks { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
-    .task { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .pill { color: var(--success); font-weight: 700; }
-    button { border: 0; border-radius: 8px; padding: 11px 16px; font: inherit; font-weight: 800; cursor: pointer; background: var(--primary); color: #fff; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(820px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(41, 63, 115, .1);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+    }
+
+    .intro { background: var(--accent); padding: 32px; }
+    .form { padding: 32px; }
+    h1, h2 { margin: 0 0 12px; }
+    p, .hint { color: var(--muted); line-height: 1.5; }
+
+    form { display: grid; gap: 14px; margin-top: 20px; }
+    label { display: block; font-weight: 700; margin-bottom: 6px; }
+
+    input {
+      width: 100%; padding: 12px; border: 1px solid #c9d5f1;
+      border-radius: 8px; font: inherit;
+    }
+
+    input:focus { outline: 3px solid #dfe7ff; border-color: var(--primary); }
+    .field.invalid input { border-color: #ff9f43; }
+    .error { display: none; color: var(--danger); font-size: 13px; margin-top: 5px; font-weight: 700; }
+    .field.invalid .error { display: block; }
+
+    .options { display: grid; gap: 10px; }
+    .checkline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 700; }
+    .checkline input { width: auto; }
+
+    button, .signup-link {
+      border: 0; border-radius: 8px; padding: 13px 18px;
+      font: inherit; font-weight: 800; cursor: pointer;
+      text-decoration: none; display: inline-flex;
+      justify-content: center; align-items: center;
+    }
+
+    .primary { background: var(--primary); color: #fff; }
+    .primary:hover { background: var(--primary-dark); }
+    .secondary { background: #f3f6ff; color: var(--text); border: 1px solid var(--line); }
+
+    .message { display: none; padding: 12px; border-radius: 8px; font-weight: 700; }
+    .message.show { display: block; }
+    .message.good { background: #e9f8f0; color: var(--success); }
+    .message.bad { background: #ffe9e9; color: var(--danger); }
+
+    .signup-box { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+
+    @media (max-width: 720px) { .card { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <main>
-    <header>
-      <div><h1>Welcome</h1><p id="welcome">Loading your account...</p></div>
-      <button id="logout" type="button">Log Out</button>
-    </header>
-    <section class="panel">
-      <h2>Your Tasks</h2>
-      <ul class="tasks" id="tasks"></ul>
+  <main class="card">
+    <section class="intro">
+      <h1>Login</h1>
+      <p>Log in to continue with your saved tasks, focus settings, progress, and profile.</p>
     </section>
-    <section class="panel">
-      <h2>Progress</h2>
-      <p id="progress"></p>
+    <section class="form">
+      <h2>Log in</h2>
+      <p>Welcome back. Pick up where you left off.</p>
+      <form id="loginForm" novalidate>
+        <div class="field" id="usernameField">
+          <label for="username">Username</label>
+          <input id="username" autocomplete="username" placeholder="Enter your username">
+          <div class="error"></div>
+        </div>
+        <div class="field" id="passwordField">
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="current-password" placeholder="Enter your password">
+          <div class="error"></div>
+        </div>
+        <div class="options">
+          <label class="checkline"><input id="showPassword" type="checkbox"> Show password</label>
+          <label class="checkline"><input id="rememberLogin" type="checkbox"> Keep me logged in</label>
+        </div>
+        <button class="primary" type="submit">Log In</button>
+        <div id="message" class="message" role="alert"></div>
+      </form>
+      <div class="signup-box">
+        <strong>New here?</strong>
+        <p><a class="signup-link secondary" href="signup.html">Go to Sign Up</a></p>
+      </div>
     </section>
   </main>
 
   <script>
     const API_BASE = 'https://study-platform-p3q7.onrender.com';
-    const welcome = document.getElementById('welcome');
-    const tasksList = document.getElementById('tasks');
-    const progress = document.getElementById('progress');
 
-    async function loadUserData() {
-      const response = await fetch(`${API_BASE}/api/user-data`, { credentials: 'include' });
-      if (!response.ok) { window.location.href = 'index.html'; return; }
-      const result = await response.json();
-      const data = result.data;
-      tasksList.innerHTML = data.tasks.map((task) => `<li class="task"><span>${task.name}</span><span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span></li>`).join('');
-      progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
+    const $ = (id) => document.getElementById(id);
+    const form = $('loginForm');
+    const usernameInput = $('username');
+    const passwordInput = $('password');
+    const showPasswordInput = $('showPassword');
+    const rememberLoginInput = $('rememberLogin');
+    const message = $('message');
+
+    function slug(value) { return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
+    function setFieldError(fieldId, text = '') {
+      const field = $(fieldId);
+      field.classList.toggle('invalid', Boolean(text));
+      field.querySelector('.error').textContent = text;
+    }
+    function setMessage(text = '', type = '') {
+      message.textContent = text;
+      message.className = text ? `message show ${type}` : 'message';
+    }
+    function clearErrors() { setFieldError('usernameField'); setFieldError('passwordField'); setMessage(); }
+
+    function validateForm() {
+      clearErrors(); let valid = true;
+      if (!usernameInput.value.trim()) { setFieldError('usernameField', 'Please enter your username.'); valid = false; }
+      if (!passwordInput.value) { setFieldError('passwordField', 'Please enter your password.'); valid = false; }
+      return valid;
     }
 
-    async function checkSession() {
-      const response = await fetch(`${API_BASE}/api/session`, { credentials: 'include' });
-      if (!response.ok) { window.location.href = 'index.html'; return null; }
-      return (await response.json()).user;
-    }
-
-    document.getElementById('logout').addEventListener('click', async () => {
-      try { await fetch(`${API_BASE}/api/logout`, { method: 'POST', credentials: 'include' }); } catch (e) {}
-      window.location.href = 'index.html';
-    });
-
-    (async () => {
+    async function login() {
+      setMessage('Checking your login...', 'good');
       try {
-        const user = await checkSession();
-        if (!user) return;
-        welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
-        await loadUserData();
-      } catch { window.location.href = 'index.html'; }
-    })();
+        const response = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username: slug(usernameInput.value), password: passwordInput.value, remember: rememberLoginInput.checked })
+        });
+        const result = await response.json();
+        if (!response.ok) { setMessage(result.message || 'Incorrect username or password.', 'bad'); return; }
+        setMessage('Login successful. Redirecting...', 'good');
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+      } catch (err) { setMessage('Could not connect to the server.', 'bad'); }
+    }
+
+    usernameInput.addEventListener('input', clearErrors);
+    passwordInput.addEventListener('input', clearErrors);
+    showPasswordInput.addEventListener('change', () => { passwordInput.type = showPasswordInput.checked ? 'text' : 'password'; });
+    form.addEventListener('submit', (event) => { event.preventDefault(); usernameInput.value = slug(usernameInput.value); if (validateForm()) login(); });
   </script>
 </body>
 </html>
