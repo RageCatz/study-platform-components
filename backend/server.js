@@ -57,7 +57,7 @@ app.post("/api/signup", async (req, res) => {
 
     res.json({ 
       message: "User created", 
-      redirect: "index.html"
+      redirect: "dashboard.html"
     });
 
   } catch (err) {
@@ -101,7 +101,7 @@ app.post("/api/login", async (req, res) => {
       username: user.username, 
       name: user.name 
     },
-    redirect: "index.html"
+    redirect: "dashboard.html"
   });
 });
 
