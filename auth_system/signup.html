@@ -277,7 +277,7 @@
   </div>
 
   <script>
-    // API Base URL - Updated to use your specific API
+    // API Base URL
     const API_BASE = 'https://study-platform-p3q7.onrender.com';
 
     const $ = (id) => document.getElementById(id);
@@ -396,14 +396,7 @@
       return valid;
     }
 
-    async function checkExistingSession() {
-      try {
-        const response = await fetch(`${API_BASE}/api/session`, { 
-          credentials: 'include' 
-        });
-        if (response.ok) location.href = 'index.html';
-      } catch {}
-    }
+    // REMOVED: checkExistingSession() - This was auto-redirecting to dashboard
 
     async function createAccount(remember) {
       if (!pendingSignup) return;
@@ -427,19 +420,10 @@
           return;
         }
 
-        const sessionResponse = await fetch(`${API_BASE}/api/session`, { 
-          credentials: 'include' 
-        });
-        if (!sessionResponse.ok) {
-          saveModal.classList.remove('open');
-          setMessage('The account was created, but your session could not be verified.', 'bad');
-          return;
-        }
-
         saveModal.classList.remove('open');
         setMessage('Account created. Redirecting...');
         setTimeout(() => {
-          location.replace(result.redirect || 'index.html');
+          window.location.href = 'index.html';
         }, 500);
       } catch {
         saveModal.classList.remove('open');
@@ -488,8 +472,6 @@
 
     saveYesButton.addEventListener('click', () => createAccount(true));
     saveNoButton.addEventListener('click', () => createAccount(false));
-
-    checkExistingSession();
   </script>
 </body>
 </html>

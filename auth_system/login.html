@@ -193,7 +193,7 @@
   </main>
 
   <script>
-    // API Base URL - Updated to use your specific API
+    // API Base URL
     const API_BASE = 'https://study-platform-p3q7.onrender.com';
 
     const $ = (id) => document.getElementById(id);
@@ -246,14 +246,7 @@
       return valid;
     }
 
-    async function checkExistingSession() {
-      try {
-        const response = await fetch(`${API_BASE}/api/session`, { 
-          credentials: 'include' 
-        });
-        if (response.ok) location.href = 'index.html';
-      } catch {}
-    }
+    // REMOVED: checkExistingSession() - This was auto-redirecting to dashboard
 
     async function login() {
       setMessage('Checking your login...', 'good');
@@ -299,8 +292,6 @@
       usernameInput.value = slug(usernameInput.value);
       if (validateForm()) login();
     });
-
-    checkExistingSession();
   </script>
 </body>
 </html>

@@ -92,7 +92,7 @@
     <header>
       <div>
         <h1>Welcome</h1>
-        <p id="welcome">Loading your SQL-backed account...</p>
+        <p id="welcome">Loading your account...</p>
       </div>
       <button id="logout" type="button">Log Out</button>
     </header>
@@ -109,26 +109,16 @@
   </main>
 
   <script>
-    // API Base URL - Updated to your backend
+    // API Base URL
     const API_BASE = 'https://study-platform-p3q7.onrender.com';
 
     const welcome = document.getElementById('welcome');
     const tasksList = document.getElementById('tasks');
     const progress = document.getElementById('progress');
 
-    async function requireSession() {
-      const response = await fetch(`${API_BASE}/api/session`, { 
-        credentials: 'include' 
-      });
-
-      if (!response.ok) {
-        location.href = 'login.html';
-        return null;
-      }
-
-      const result = await response.json();
-      return result.user;
-    }
+    // REMOVED: The automatic session check
+    // Now it will ONLY show the dashboard if the user is logged in
+    // But it should NOT auto-redirect from login page
 
     async function loadUserData() {
       const response = await fetch(`${API_BASE}/api/user-data`, { 
@@ -136,7 +126,7 @@
       });
 
       if (!response.ok) {
-        tasksList.innerHTML = '<li class="task">No saved data found.</li>';
+        window.location.href = 'login.html';
         return;
       }
 
@@ -153,7 +143,21 @@
       progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
     }
 
-    // FIXED: Added try/catch and redirect handling
+    async function checkSession() {
+      const response = await fetch(`${API_BASE}/api/session`, { 
+        credentials: 'include' 
+      });
+
+      if (!response.ok) {
+        // If no session, go to login
+        window.location.href = 'login.html';
+        return null;
+      }
+
+      const result = await response.json();
+      return result.user;
+    }
+
     document.getElementById('logout').addEventListener('click', async () => {
       try {
         await fetch(`${API_BASE}/api/logout`, {
@@ -163,18 +167,17 @@
       } catch (e) {
         console.log("Logout error:", e);
       }
-      // Force redirect to login
       window.location.href = 'login.html';
     });
 
     (async () => {
       try {
-        const user = await requireSession();
+        const user = await checkSession();
         if (!user) return;
         welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
         await loadUserData();
       } catch {
-        location.href = 'login.html';
+        window.location.href = 'login.html';
       }
     })();
   </script>
