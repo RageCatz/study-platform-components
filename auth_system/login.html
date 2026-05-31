@@ -42,108 +42,47 @@
       grid-template-columns: 1fr 1.1fr;
     }
 
-    .intro {
-      background: var(--accent);
-      padding: 32px;
-    }
-
+    .intro { background: var(--accent); padding: 32px; }
     .form { padding: 32px; }
-
     h1, h2 { margin: 0 0 12px; }
-
     p, .hint { color: var(--muted); line-height: 1.5; }
 
-    form {
-      display: grid;
-      gap: 14px;
-      margin-top: 20px;
-    }
-
-    label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
+    form { display: grid; gap: 14px; margin-top: 20px; }
+    label { display: block; font-weight: 700; margin-bottom: 6px; }
 
     input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #c9d5f1;
-      border-radius: 8px;
-      font: inherit;
+      width: 100%; padding: 12px; border: 1px solid #c9d5f1;
+      border-radius: 8px; font: inherit;
     }
 
-    input:focus {
-      outline: 3px solid #dfe7ff;
-      border-color: var(--primary);
-    }
-
+    input:focus { outline: 3px solid #dfe7ff; border-color: var(--primary); }
     .field.invalid input { border-color: #ff9f43; }
-
-    .error {
-      display: none;
-      color: var(--danger);
-      font-size: 13px;
-      margin-top: 5px;
-      font-weight: 700;
-    }
-
+    .error { display: none; color: var(--danger); font-size: 13px; margin-top: 5px; font-weight: 700; }
     .field.invalid .error { display: block; }
 
     .options { display: grid; gap: 10px; }
-
-    .checkline {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
+    .checkline { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 700; }
     .checkline input { width: auto; }
 
     button, .signup-link {
-      border: 0;
-      border-radius: 8px;
-      padding: 13px 18px;
-      font: inherit;
-      font-weight: 800;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
+      border: 0; border-radius: 8px; padding: 13px 18px;
+      font: inherit; font-weight: 800; cursor: pointer;
+      text-decoration: none; display: inline-flex;
+      justify-content: center; align-items: center;
     }
 
     .primary { background: var(--primary); color: #fff; }
     .primary:hover { background: var(--primary-dark); }
+    .secondary { background: #f3f6ff; color: var(--text); border: 1px solid var(--line); }
 
-    .secondary {
-      background: #f3f6ff;
-      color: var(--text);
-      border: 1px solid var(--line);
-    }
-
-    .message {
-      display: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 700;
-    }
-
+    .message { display: none; padding: 12px; border-radius: 8px; font-weight: 700; }
     .message.show { display: block; }
     .message.good { background: #e9f8f0; color: var(--success); }
     .message.bad { background: #ffe9e9; color: var(--danger); }
 
-    .signup-box {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
-    }
+    .signup-box { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
 
-    @media (max-width: 720px) {
-      .card { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 720px) { .card { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -152,39 +91,27 @@
       <h1>Login</h1>
       <p>Log in to continue with your saved tasks, focus settings, progress, and profile.</p>
     </section>
-
     <section class="form">
       <h2>Log in</h2>
       <p>Welcome back. Pick up where you left off.</p>
-
       <form id="loginForm" novalidate>
         <div class="field" id="usernameField">
           <label for="username">Username</label>
           <input id="username" autocomplete="username" placeholder="Enter your username">
           <div class="error"></div>
         </div>
-
         <div class="field" id="passwordField">
           <label for="password">Password</label>
           <input id="password" type="password" autocomplete="current-password" placeholder="Enter your password">
           <div class="error"></div>
         </div>
-
         <div class="options">
-          <label class="checkline">
-            <input id="showPassword" type="checkbox">
-            Show password
-          </label>
-          <label class="checkline">
-            <input id="rememberLogin" type="checkbox">
-            Keep me logged in on this browser
-          </label>
+          <label class="checkline"><input id="showPassword" type="checkbox"> Show password</label>
+          <label class="checkline"><input id="rememberLogin" type="checkbox"> Keep me logged in</label>
         </div>
-
         <button class="primary" type="submit">Log In</button>
         <div id="message" class="message" role="alert"></div>
       </form>
-
       <div class="signup-box">
         <strong>New here?</strong>
         <p><a class="signup-link secondary" href="signup.html">Go to Sign Up</a></p>
@@ -193,11 +120,9 @@
   </main>
 
   <script>
-    // API Base URL
     const API_BASE = 'https://study-platform-p3q7.onrender.com';
 
     const $ = (id) => document.getElementById(id);
-
     const form = $('loginForm');
     const usernameInput = $('username');
     const passwordInput = $('password');
@@ -205,93 +130,45 @@
     const rememberLoginInput = $('rememberLogin');
     const message = $('message');
 
-    function slug(value) {
-      return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-    }
-
+    function slug(value) { return String(value).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
     function setFieldError(fieldId, text = '') {
       const field = $(fieldId);
       field.classList.toggle('invalid', Boolean(text));
       field.querySelector('.error').textContent = text;
     }
-
     function setMessage(text = '', type = '') {
       message.textContent = text;
       message.className = text ? `message show ${type}` : 'message';
     }
-
-    function clearErrors() {
-      setFieldError('usernameField');
-      setFieldError('passwordField');
-      setMessage();
-    }
+    function clearErrors() { setFieldError('usernameField'); setFieldError('passwordField'); setMessage(); }
 
     function validateForm() {
-      clearErrors();
-      let valid = true;
-
-      if (!usernameInput.value.trim()) {
-        setFieldError('usernameField', 'Please enter your username.');
-        valid = false;
-      }
-
-      if (!passwordInput.value) {
-        setFieldError('passwordField', 'Please enter your password.');
-        valid = false;
-      } else if (passwordInput.value.length < 6) {
-        setFieldError('passwordField', 'Your password must be at least 6 characters.');
-        valid = false;
-      }
-
+      clearErrors(); let valid = true;
+      if (!usernameInput.value.trim()) { setFieldError('usernameField', 'Please enter your username.'); valid = false; }
+      if (!passwordInput.value) { setFieldError('passwordField', 'Please enter your password.'); valid = false; }
       return valid;
     }
 
-    // REMOVED: checkExistingSession() - This was auto-redirecting to dashboard
-
     async function login() {
       setMessage('Checking your login...', 'good');
-
       try {
         const response = await fetch(`${API_BASE}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({
-            username: slug(usernameInput.value),
-            password: passwordInput.value,
-            remember: rememberLoginInput.checked
-          })
+          body: JSON.stringify({ username: slug(usernameInput.value), password: passwordInput.value, remember: rememberLoginInput.checked })
         });
-        
         const result = await response.json();
-
-        if (!response.ok) {
-          setMessage(result.message || 'Incorrect username or password.', 'bad');
-          return;
-        }
-
+        if (!response.ok) { setMessage(result.message || 'Incorrect username or password.', 'bad'); return; }
         setMessage('Login successful. Redirecting...', 'good');
-        setTimeout(() => {
-          location.href = result.redirect || 'index.html';
-        }, 500);
-      } catch (err) {
-        console.error('Login error:', err);
-        setMessage('Could not connect to the server.', 'bad');
-      }
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+      } catch (err) { setMessage('Could not connect to the server.', 'bad'); }
     }
 
     usernameInput.addEventListener('input', clearErrors);
     passwordInput.addEventListener('input', clearErrors);
-
-    showPasswordInput.addEventListener('change', () => {
-      passwordInput.type = showPasswordInput.checked ? 'text' : 'password';
-    });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      usernameInput.value = slug(usernameInput.value);
-      if (validateForm()) login();
-    });
+    showPasswordInput.addEventListener('change', () => { passwordInput.type = showPasswordInput.checked ? 'text' : 'password'; });
+    form.addEventListener('submit', (event) => { event.preventDefault(); usernameInput.value = slug(usernameInput.value); if (validateForm()) login(); });
   </script>
 </body>
 </html>

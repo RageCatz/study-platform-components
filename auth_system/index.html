@@ -6,102 +6,32 @@
   <title>Dashboard</title>
   <style>
     :root {
-      --bg: #f6f8fb;
-      --panel: #fff;
-      --text: #1f2a44;
-      --muted: #64708d;
-      --line: #dce4f4;
-      --primary: #4f63d7;
-      --success: #2f8e5d;
+      --bg: #f6f8fb; --panel: #fff; --text: #1f2a44;
+      --muted: #64708d; --line: #dce4f4; --primary: #4f63d7; --success: #2f8e5d;
     }
-
     * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 24px;
-    }
-
-    main {
-      width: min(900px, 100%);
-      margin: 0 auto;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
+    body { margin: 0; min-height: 100vh; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); padding: 24px; }
+    main { width: min(900px, 100%); margin: 0 auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
     h1, h2, p { margin-top: 0; }
-
     p { color: var(--muted); line-height: 1.5; }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 24px;
-      box-shadow: 0 12px 32px rgba(41, 63, 115, .08);
-      margin-bottom: 16px;
-    }
-
-    .tasks {
-      display: grid;
-      gap: 10px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-    }
-
-    .task {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .pill {
-      color: var(--success);
-      font-weight: 700;
-    }
-
-    button {
-      border: 0;
-      border-radius: 8px;
-      padding: 11px 16px;
-      font: inherit;
-      font-weight: 800;
-      cursor: pointer;
-      background: var(--primary);
-      color: #fff;
-    }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 24px; box-shadow: 0 12px 32px rgba(41, 63, 115, .08); margin-bottom: 16px; }
+    .tasks { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+    .task { border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .pill { color: var(--success); font-weight: 700; }
+    button { border: 0; border-radius: 8px; padding: 11px 16px; font: inherit; font-weight: 800; cursor: pointer; background: var(--primary); color: #fff; }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <div>
-        <h1>Welcome</h1>
-        <p id="welcome">Loading your account...</p>
-      </div>
+      <div><h1>Welcome</h1><p id="welcome">Loading your account...</p></div>
       <button id="logout" type="button">Log Out</button>
     </header>
-
     <section class="panel">
       <h2>Your Tasks</h2>
       <ul class="tasks" id="tasks"></ul>
     </section>
-
     <section class="panel">
       <h2>Progress</h2>
       <p id="progress"></p>
@@ -109,65 +39,29 @@
   </main>
 
   <script>
-    // API Base URL
     const API_BASE = 'https://study-platform-p3q7.onrender.com';
-
     const welcome = document.getElementById('welcome');
     const tasksList = document.getElementById('tasks');
     const progress = document.getElementById('progress');
 
-    // REMOVED: The automatic session check
-    // Now it will ONLY show the dashboard if the user is logged in
-    // But it should NOT auto-redirect from login page
-
     async function loadUserData() {
-      const response = await fetch(`${API_BASE}/api/user-data`, { 
-        credentials: 'include' 
-      });
-
-      if (!response.ok) {
-        window.location.href = 'login.html';
-        return;
-      }
-
+      const response = await fetch(`${API_BASE}/api/user-data`, { credentials: 'include' });
+      if (!response.ok) { window.location.href = 'index.html'; return; }
       const result = await response.json();
       const data = result.data;
-
-      tasksList.innerHTML = data.tasks.map((task) => `
-        <li class="task">
-          <span>${task.name}</span>
-          <span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span>
-        </li>
-      `).join('');
-
+      tasksList.innerHTML = data.tasks.map((task) => `<li class="task"><span>${task.name}</span><span class="pill">${task.status} - ${task.priority} - due ${task.dueDate}</span></li>`).join('');
       progress.textContent = `${data.progress.focusMinutesToday} focus minutes today, ${data.progress.totalSessions} total sessions.`;
     }
 
     async function checkSession() {
-      const response = await fetch(`${API_BASE}/api/session`, { 
-        credentials: 'include' 
-      });
-
-      if (!response.ok) {
-        // If no session, go to login
-        window.location.href = 'login.html';
-        return null;
-      }
-
-      const result = await response.json();
-      return result.user;
+      const response = await fetch(`${API_BASE}/api/session`, { credentials: 'include' });
+      if (!response.ok) { window.location.href = 'index.html'; return null; }
+      return (await response.json()).user;
     }
 
     document.getElementById('logout').addEventListener('click', async () => {
-      try {
-        await fetch(`${API_BASE}/api/logout`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-      } catch (e) {
-        console.log("Logout error:", e);
-      }
-      window.location.href = 'login.html';
+      try { await fetch(`${API_BASE}/api/logout`, { method: 'POST', credentials: 'include' }); } catch (e) {}
+      window.location.href = 'index.html';
     });
 
     (async () => {
@@ -176,9 +70,7 @@
         if (!user) return;
         welcome.textContent = `Welcome, ${user.name}. Signed in as ${user.username}.`;
         await loadUserData();
-      } catch {
-        window.location.href = 'login.html';
-      }
+      } catch { window.location.href = 'index.html'; }
     })();
   </script>
 </body>
