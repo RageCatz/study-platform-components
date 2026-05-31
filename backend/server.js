@@ -55,10 +55,9 @@ app.post("/api/signup", async (req, res) => {
       path: "/"
     });
 
-    // FIXED: Changed from "index.html" to "dashboard.html"
     res.json({ 
       message: "User created", 
-      redirect: "dashboard.html"
+      redirect: "index.html"
     });
 
   } catch (err) {
@@ -96,14 +95,13 @@ app.post("/api/login", async (req, res) => {
     path: "/"
   });
 
-  // FIXED: Changed from "index.html" to "dashboard.html"
   res.json({ 
     token, 
     user: { 
       username: user.username, 
       name: user.name 
     },
-    redirect: "dashboard.html"
+    redirect: "index.html"
   });
 });
 
@@ -135,7 +133,7 @@ app.get("/api/session", async (req, res) => {
   }
 });
 
-// LOGOUT
+// LOGOUT - FIXED: Added all cookie options to match the original cookie
 app.post("/api/logout", (req, res) => {
   res.clearCookie("token", { 
     path: "/",
